@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+const API_ENDPOINT = "https://hn.algolia.com/api/v1/search?query=";
+
 /* ================= ITEM ================= */
 const Item = ({ story, onRemove }) => (
   <div>
@@ -13,9 +15,11 @@ const Item = ({ story, onRemove }) => (
     <p>Points: <span>{story.points}</span></p>
     <p>Comments: <span>{story.num_comments}</span></p>
 
-    <button onClick={() => onRemove(story.objectID)}>
-      Delete
-    </button>
+    {onRemove && (
+      <button onClick={() => onRemove(story.objectID)}>
+        Delete
+      </button>
+    )}
   </div>
 );
 
@@ -32,7 +36,7 @@ const List = ({ stories, onRemove }) => (
   </div>
 );
 
-/* ========== REUSABLE INPUT ========== */
+/* ================= INPUT ================= */
 const InputWithLabel = ({ value, onInputChange, children }) => (
   <div>
     <label htmlFor="search">{children}</label>
@@ -55,82 +59,66 @@ const Header = () => (
 
 /* ================= APP ================= */
 const App = () => {
-  const initialStories = [
-    {
-      objectID: 1,
-      title: "React just got even better",
-      url: "https://react.dev",
-      author: "dan_abramov",
-      points: 300,
-      num_comments: 38,
-    },
-    {
-      objectID: 2,
-      title: "Vite 5.0 is here",
-      url: "https://vitejs.dev",
-      author: "yyx990803",
-      points: 189,
-      num_comments: 27,
-    },
-    {
-      objectID: 3,
-      title: "Understanding JavaScript closures",
-      url: "https://developer.mozilla.org",
-      author: "mdn_contributor",
-      points: 312,
-      num_comments: 54,
-    },
-    {
-      objectID: 4,
-      title: "CSS Grid complete guide",
-      url: "https://css-tricks.com",
-      author: "chriscoyier",
-      points: 178,
-      num_comments: 21,
-    },
-  ];
+  const [stories, setStories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [url, setUrl] = useState(`${API_ENDPOINT}react`);
 
-  const [stories, setStories] = useState(initialStories);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  const [searchTerm, setSearchTerm] = useState(
-    localStorage.getItem("search") || ""
-  );
-
+  /* FETCH DATA */
   useEffect(() => {
-    localStorage.setItem("search", searchTerm);
-  }, [searchTerm]);
+    const fetchStories = async () => {
+      setIsLoading(true);
+      setIsError(false);
 
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        setStories(data.hits);
+      } catch (error) {
+        setIsError(true);
+      }
+
+      setIsLoading(false);
+    };
+
+    fetchStories();
+  }, [url]);
+
+  /* INPUT HANDLER */
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  // DELETE FUNCTION (LAB 8)
-  const handleRemoveStory = (id) => {
-    const newStories = stories.filter(
-      (story) => story.objectID !== id
-    );
-    setStories(newStories);
+  /* SUBMIT SEARCH */
+  const handleSearchSubmit = () => {
+    setUrl(`${API_ENDPOINT}${searchTerm}`);
   };
-
-  const filteredStories = stories.filter((story) =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   return (
     <div>
       <Header />
 
-      <InputWithLabel
-        value={searchTerm}
-        onInputChange={handleSearch}
-      >
+      <InputWithLabel value={searchTerm} onInputChange={handleSearch}>
         Search:
       </InputWithLabel>
 
-      <List
-        stories={filteredStories}
-        onRemove={handleRemoveStory}
-      />
+      <button
+        onClick={handleSearchSubmit}
+        disabled={!searchTerm}
+      >
+        Search
+      </button>
+
+      {isError && <p>Something went wrong...</p>}
+
+      {isLoading ? (
+        <p>Loading ...</p>
+      ) : (
+        <List stories={stories} />
+      )}
     </div>
   );
 };
