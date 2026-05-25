@@ -1,4 +1,4 @@
-// Global stories array - accessible by all components
+// Global stories array
 const stories = [
   {
     objectID: 1,
@@ -34,61 +34,59 @@ const stories = [
   },
 ];
 
-// Header component - displays the app title
-function Header() {
-  return (
-    <div>
-      <h1>Hacker News Stories</h1>
-    </div>
-  );
-}
+// Header - arrow function, concise body
+const Header = () => (
+  <div>
+    <h1>Hacker News Stories</h1>
+  </div>
+);
 
-// Search component - responsible for the search UI only
-function Search() {
+// Search - arrow function, block body (needs logic inside)
+const Search = () => {
+  const handleChange = (event) => {
+    console.log(event.target.value);
+    console.log("User is typing...");
+  };
+
   return (
     <div>
       <label htmlFor="search">Search: </label>
-      <input type="text" id="search" />
+      <input type="text" id="search" onChange={handleChange} />
     </div>
   );
-}
+};
 
-// List component - responsible for rendering the stories list
-function List() {
-  return (
-    <div>
-      {stories.map((story) => (
-        <div key={story.objectID}>
-          <h3>
-            <a href={story.url} target="_blank" rel="noreferrer">
-              {story.title}
-            </a>
-          </h3>
-          <p>Author: <span>{story.author}</span></p>
-          <p>Points: <span>{story.points}</span></p>
-          <p>Comments: <span>{story.num_comments}</span></p>
-        </div>
-      ))}
-    </div>
-  );
-}
+// List - arrow function, concise body with map
+const List = () => (
+  <div>
+    {stories.map((story) => (
+      <div key={story.objectID}>
+        <h3>
+          <a href={story.url} target="_blank" rel="noreferrer">
+            {story.title}
+          </a>
+        </h3>
+        <p>Author: <span>{story.author}</span></p>
+        <p>Points: <span>{story.points}</span></p>
+        <p>Comments: <span>{story.num_comments}</span></p>
+      </div>
+    ))}
+  </div>
+);
 
-// App component - the main component that puts everything together
-function App() {
-  return (
-    <div>
-      <Header />
-      <Search />
-      <List />
-    </div>
-  );
-}
+// App - arrow function, concise body
+const App = () => (
+  <div>
+    <Header />
+    <Search />
+    <List />
+  </div>
+);
 
 export default App;
 
 // Reflection:
-// 1. App is now just a container that assembles all components together
-// 2. List is responsible only for rendering the stories
-// 3. Search is responsible only for the search input UI
-// 4. This structure is cleaner because each component has one job,
-//    making it easier to debug, reuse, and maintain
+// 1. Concise body arrow functions are used when the function only returns one expression
+// 2. Block body arrow functions are used when we need logic (variables, if statements, handlers)
+// 3. The event object contains information about the user interaction,
+//    including event.target.value which holds the typed text
